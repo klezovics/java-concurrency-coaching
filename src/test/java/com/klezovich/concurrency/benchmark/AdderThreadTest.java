@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.concurrent.ForkJoinPool;
 
 @Slf4j
 class AdderThreadTest {
@@ -27,6 +28,21 @@ class AdderThreadTest {
         a2.join();
 
         log.info("Result is: {}", a1.getResult().add(a2.getResult()));
+    }
+
+    @Test
+    void testThreeThreads() throws InterruptedException {
+        var a1 = new AdderThread(0L, 333*1000*1000);
+        var a2 = new AdderThread(333*1000*1000 + 1, 666 * 1000 * 1000);
+        var a3 = new AdderThread(666*1000*1000 + 1, 1000 * 1000 * 1000);
+        a1.start();
+        a2.start();
+        a3.start();
+        a1.join();
+        a2.join();
+        a3.join();
+
+        log.info("Result is: {}", a1.getResult().add(a2.getResult()).add(a3.getResult()));
     }
 
     @Test
@@ -68,5 +84,12 @@ class AdderThreadTest {
         });
     }
 
+    @Test
+    void testForkJoin() {
+        var commonPool = ForkJoinPool.commonPool();
+        var crt = new CustomRecursiveAction(new Range(0L,1000*1000*1000L));
+        commonPool.execute(crt);
+        crt.join();
+    }
 
 }
